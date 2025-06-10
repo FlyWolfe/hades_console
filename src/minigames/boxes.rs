@@ -1,19 +1,32 @@
 use macroquad::{color::*, shapes::*, window::*};
-use rand::{rng, Rng};
+use rand::{rng, rngs::ThreadRng, Rng};
 
 
 use crate::{input, treatdispenser};
 use treatdispenser::TreatDispenser;
 
-pub async fn run(mut dispenser: Option<TreatDispenser>) {
-    const NUM_LOCATIONS: i32 = 2;
-    let mut rng = rng();
-    let mut current_location: i32 = rng.random_range(1..=NUM_LOCATIONS);
+const NUM_LOCATIONS: i32 = 2;
 
-    loop {
+pub struct BoxesMinigame {
+    rng: ThreadRng,
+    box_location: i32,
+}
+
+impl BoxesMinigame {
+    pub fn new() -> BoxesMinigame {
+        let mut rng = rng();
+        let box_location = rng.random_range(1..=NUM_LOCATIONS);
+
+        BoxesMinigame {
+            rng,
+            box_location
+        }
+    }
+
+    pub async fn run(&mut self, dispenser: &mut Option<TreatDispenser>) {
         clear_background(DARKGRAY);
         draw_rectangle(
-            screen_width() * (current_location as f32 - 1.0) / NUM_LOCATIONS as f32,
+            screen_width() * (self.box_location as f32 - 1.0) / NUM_LOCATIONS as f32,
             0.0,
             screen_width() / NUM_LOCATIONS as f32,
             screen_height(),
@@ -23,12 +36,12 @@ pub async fn run(mut dispenser: Option<TreatDispenser>) {
         if input::get_input_pos().is_some() {
             let input_x = input::get_input_pos().unwrap().x;
 
-            if input_x > screen_width() * (current_location as f32 - 1.0) / NUM_LOCATIONS as f32
-                && input_x < screen_width() * current_location as f32 / NUM_LOCATIONS as f32
+            if input_x > screen_width() * (self.box_location as f32 - 1.0) / NUM_LOCATIONS as f32
+                && input_x < screen_width() * self.box_location as f32 / NUM_LOCATIONS as f32
             {
-                let prev_location = current_location;
-                while NUM_LOCATIONS != 1 && current_location == prev_location {
-                    current_location = rng.random_range(1..=NUM_LOCATIONS);
+                let prev_location = self.box_location;
+                while NUM_LOCATIONS != 1 && self.box_location == prev_location {
+                    self.box_location = self.rng.random_range(1..=NUM_LOCATIONS);
                 }
                 
                 if let Some(ref mut disp) = dispenser {disp.reward().await;}

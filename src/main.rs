@@ -13,10 +13,13 @@ mod treatdispenser;
 async fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     let dispenser_active = !args.contains(&"no_dispenser".to_string());
-    let dispenser = if dispenser_active {Some(TreatDispenser::new().await?)} else {None};
+    let mut dispenser = if dispenser_active {Some(TreatDispenser::new().await?)} else {None};
 
-    //minigames::boxes::run(dispenser).await;
-    minigames::advanced_boxes::run(dispenser).await;
+    //let mut boxes_minigame = minigames::boxes::BoxesMinigame::new();
+    let mut advanced_boxes_minigame = minigames::advanced_boxes::AdvancedBoxesMinigame::new();
 
-    Ok(())
+    loop {
+        //boxes_minigame.run(&mut dispenser).await;
+        advanced_boxes_minigame.run(&mut dispenser).await;
+    }
 }
